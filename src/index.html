@@ -6,13 +6,25 @@
 </head>
 <body>
   <style>
-    #drawing-area {
-      width: 800px;
-      height: 600px;
+    #drawing-area-naive {
+      width: 510px;
+      height: 510px;
+      border: solid 1px black;
+    }
+
+    #drawing-area-lfsr {
+      width: 510px;
+      height: 510px;
       border: solid 1px black;
     }
   </style>
-  <canvas id="drawing-area"></canvas>
+  <h4>Naive</h4>
+  <canvas id="drawing-area-naive" height="255" width="255"></canvas>
+  <h4>Linear Feedback Shift Register</h4>
+  <canvas id="drawing-area-lfsr" height="255" width="255"></canvas>
+  <h4>Galois Linear Feedback Shift Register</h4>
+  <canvas id="drawing-area-galois" height="255" width="255"></canvas>
+
   <script src="fizzlefade.js"></script>
 </body>
 </html>
