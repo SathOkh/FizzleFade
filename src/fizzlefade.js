@@ -1,9 +1,5 @@
 const DEBUG = false;
 
-const canvas = document.getElementById("drawing-area-naive");
-const ctx = canvas.getContext("2d");
-ctx.fillStyle = "#52ff56";
-
 //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Bitwise_Operators 
 function createBinaryString(nMask) {
     // nMask must be between -2147483648 and 2147483647
@@ -26,10 +22,6 @@ function debugLog(numbers) {
     });
 }
 
-function sleep(ms) {
-    return new Promise(resolve => {setTimeout(resolve, ms)});
-}
-
 function convertToPoint(number) {
     return {
         x: number & 0xFF, 
@@ -41,21 +33,39 @@ function drawPoint(context, x, y) {
     context.fillRect(x, y, 1, 1);
 }
 
-async function drawFizzleNaive() {
+
+const canvas = document.getElementById("drawing-area-naive");
+const ctx = canvas.getContext("2d");
+ctx.fillStyle = "#52ff56";
+
+function *drawFizzleNaive() {
     for (let i = 0; i < 10000; ++i) {
-        await sleep(1);
-        drawPoint(ctx, Math.floor((Math.random() * canvas.width)), Math.floor((Math.random() * canvas.height)));
+        yield {
+            x: Math.floor((Math.random() * canvas.width)), 
+            y: Math.floor((Math.random() * canvas.height))
+        };
     }
 }
+const fizzleNaiveIterator = drawFizzleNaive();
+const fizzleNaiveUpdater = setInterval(
+    () => {
+        const {value, done} = fizzleNaiveIterator.next();
 
-drawFizzleNaive();
+        if (done) {
+            clearTimeout(fizzleNaiveUpdater);
+            return;
+        }
+
+        drawPoint(ctx, value.x, value.y);
+    },
+    1
+);
 
 const canvasLfsr = document.getElementById("drawing-area-lfsr");
 const ctxLfsr = canvasLfsr.getContext("2d");
-ctxLfsr.fillStyle = "#52ff56";
+ctxLfsr.fillStyle = "#ffffff";
 
-async function drawFizzleLsfr() {
-    const numbers = [];
+function *drawFizzleLsfr() {
     let generator = 1;
     do {
         // 4 bits
@@ -70,15 +80,30 @@ async function drawFizzleLsfr() {
         const bit = ((generator >> 0) ^ (generator >> 1) ^ (generator >> 3) ^ (generator >> 12));
         generator = (((bit << 15) | (generator >> 1)) & 0xFFFF);
 
-        const {x, y} = convertToPoint(generator);
-        await sleep(1);
-        drawPoint(ctxLfsr, x, y);
-
-        numbers.push(generator);
+        yield convertToPoint(generator);
     } while (generator != 1)
 
-    console.log(numbers.sort((a, b) => a - b));
-    debugLog(numbers);
 }
 
-drawFizzleLsfr();
+const fizzleLsfrIterator = drawFizzleLsfr();
+const fizzleLsfrUpdater = setInterval(
+    () => {
+        const {value, done} = fizzleLsfrIterator.next();
+
+        if (done) {
+            clearTimeout(fizzleLsfrUpdater);
+            return;
+        }
+
+        drawPoint(ctxLfsr, value.x, value.y);
+    },
+    1
+);
+
+// numbers.push(generator);
+// console.log(numbers.sort((a, b) => a - b));
+// debugLog(numbers);
+
+const canvasGalois = document.getElementById("drawing-area-galois");
+const ctxGalois = canvasLfsr.getContext("2d");
+ctxGalois.fillStyle = "#afafaf";
