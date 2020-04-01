@@ -63,7 +63,7 @@ const fizzleNaiveUpdater = setInterval(
 
 const canvasLfsr = document.getElementById("drawing-area-lfsr");
 const ctxLfsr = canvasLfsr.getContext("2d");
-ctxLfsr.fillStyle = "#ffffff";
+ctxLfsr.fillStyle = "#afafaf";
 
 function *drawFizzleLsfr() {
     let generator = 1;
@@ -105,5 +105,46 @@ const fizzleLsfrUpdater = setInterval(
 // debugLog(numbers);
 
 const canvasGalois = document.getElementById("drawing-area-galois");
-const ctxGalois = canvasLfsr.getContext("2d");
-ctxGalois.fillStyle = "#afafaf";
+const ctxGalois = canvasGalois.getContext("2d");
+ctxGalois.fillStyle = "#ff00ff";
+
+function *drawFizzleGalois() {
+    let generator = 1;
+    do {
+        // 4 bits
+        // x^4 + x^3 + 1
+        // period 15 (15 unique numbers)
+        // const bit = ((generator >> 0) ^ (generator >> 1));
+        // generator = (((bit << 3) | (generator >> 1)) & 0xF);
+
+        // 16 bits
+        // x^16 + x^15 + x^13 + x^4 + 1
+        // period 65,535 (65,535 unique numbers)
+        // const bit = ((generator >> 0) ^ (generator >> 1) ^ (generator >> 3) ^ (generator >> 12));
+        // generator = (((bit << 15) | (generator >> 1)) & 0xFFFF);
+        const bit = (generator & 1) && 0xFFFF;
+        generator = generator >> 1;
+        if (bit) {
+            generator = (generator ^ 0xB400) & 0xFFFF;
+        }
+
+        yield convertToPoint(generator);
+    } while (generator != 1)
+
+}
+
+const fizzleGaloisIterator = drawFizzleGalois();
+const fizzleGaloisUpdater = setInterval(
+    () => {
+        const {value, done} = fizzleGaloisIterator.next();
+
+        if (done) {
+            clearTimeout(fizzleGaloisUpdater);
+            return;
+        }
+
+        drawPoint(ctxGalois, value.x, value.y);
+    },
+    1
+);
+
